@@ -1,17 +1,28 @@
 import {
   Anchor,
+  AppShell,
   AspectRatio,
   Avatar,
   Badge,
+  BackgroundImage,
   Box,
+  Burger,
   Button,
   Card,
+  Center,
   Container,
   Divider,
+  Drawer,
   Grid,
   Group,
+  Image,
+  List,
   MantineProvider,
+  NavLink,
+  Overlay,
   Paper,
+  Progress,
+  RingProgress,
   SimpleGrid,
   Stack,
   Text,
@@ -33,6 +44,7 @@ import {
   IconVideo,
 } from "@tabler/icons-react";
 import { motion } from "framer-motion";
+import { useDisclosure } from "@mantine/hooks";
 import { useState } from "react";
 
 const forestImage =
@@ -49,6 +61,18 @@ const theme = createTheme({
   },
   primaryColor: "forest",
   colors: {
+    dark: [
+      "#effbe9",
+      "#cfe9c5",
+      "#a8cf9b",
+      "#7cae73",
+      "#5f8f56",
+      "#426b3d",
+      "#254b25",
+      "#183618",
+      "#102410",
+      "#0b1c0b",
+    ],
     forest: [
       "#effbe9",
       "#def3d4",
@@ -77,24 +101,28 @@ const stats = [
   {
     icon: IconRulerMeasure,
     value: "28 cm",
+    progress: 84,
     label: "Tiivaulatus",
     text: "Maksimaalne tiivaulatus tais laotuses.",
   },
   {
     icon: IconScale,
     value: "4.8 g",
+    progress: 48,
     label: "Kaal",
     text: "Uhe A4 lehega, ilma taienava kaaluta.",
   },
   {
     icon: IconGauge,
     value: "9.4 m",
+    progress: 94,
     label: "Max viskekaugus",
     text: "Parim tulemus 5 katse keskmisest.",
   },
   {
     icon: IconClock,
     value: "3.2 s",
+    progress: 64,
     label: "Lennu kestus",
     text: "Keskmiselt ohus pusimise aeg.",
   },
@@ -179,13 +207,23 @@ function MediaShowcaseCard({ type, icon: Icon, title, description, src }) {
       transition={{ type: "spring", stiffness: 260, damping: 22 }}
     >
       <Card.Section>
-        {!mediaError ? (
+        {!mediaError && !isVideo ? (
+          <AspectRatio ratio={16 / 9}>
+            <Image
+              alt={title}
+              src={src}
+              onError={() => setMediaError(true)}
+              h="100%"
+              fit="cover"
+            />
+          </AspectRatio>
+        ) : !mediaError ? (
           <AspectRatio ratio={16 / 9}>
             <Box
-              component={isVideo ? "video" : "img"}
+              component="video"
               src={src}
-              controls={isVideo || undefined}
-              muted={isVideo || undefined}
+              controls
+              muted
               onError={() => setMediaError(true)}
               style={{
                 backgroundColor: "#0b1c0b",
@@ -197,23 +235,20 @@ function MediaShowcaseCard({ type, icon: Icon, title, description, src }) {
           </AspectRatio>
         ) : (
           <AspectRatio ratio={16 / 9}>
-            <Box
+            <Center
               style={{
-                alignItems: "center",
                 backgroundImage: isVideo
                   ? "linear-gradient(135deg, rgba(26,46,26,0.95), rgba(74,140,63,0.65))"
                   : `linear-gradient(rgba(26,46,26,0.35), rgba(26,46,26,0.55)), url(${forestImage})`,
                 backgroundPosition: "center",
                 backgroundSize: "cover",
                 color: "white",
-                display: "flex",
-                justifyContent: "center",
               }}
             >
               <ThemeIcon color="forest" radius="xl" size={78} variant="light">
                 <Icon size={40} />
               </ThemeIcon>
-            </Box>
+            </Center>
           </AspectRatio>
         )}
       </Card.Section>
@@ -228,18 +263,16 @@ function MediaShowcaseCard({ type, icon: Icon, title, description, src }) {
 }
 
 function App() {
+  const [opened, { open, close }] = useDisclosure(false);
+
   return (
-    <MantineProvider theme={theme}>
-      <Box bg="#102410" mih="100vh">
-        <Box
-          component="header"
+    <MantineProvider theme={theme} forceColorScheme="dark">
+      <AppShell header={{ height: 76 }} padding={0} bg="#102410">
+        <AppShell.Header
           style={{
             backdropFilter: "blur(14px)",
             background: "rgba(12, 34, 12, 0.94)",
             borderBottom: "1px solid rgba(168, 224, 149, 0.22)",
-            position: "sticky",
-            top: 0,
-            zIndex: 20,
           }}
         >
           <Container size="lg">
@@ -259,18 +292,44 @@ function App() {
                   </Anchor>
                 ))}
               </Group>
+              <Burger
+                aria-label="Ava navigatsioon"
+                color="white"
+                hiddenFrom="sm"
+                onClick={open}
+                opened={opened}
+              />
             </Group>
           </Container>
-        </Box>
+        </AppShell.Header>
+
+        <Drawer
+          opened={opened}
+          onClose={close}
+          position="right"
+          title="Navigatsioon"
+          overlayProps={{ backgroundOpacity: 0.55, blur: 4 }}
+        >
+          <Stack gap="xs">
+            {navItems.map(([label, href]) => (
+              <NavLink
+                key={href}
+                href={href}
+                label={label}
+                leftSection={<IconPlane size={18} />}
+                onClick={close}
+              />
+            ))}
+          </Stack>
+        </Drawer>
+
+        <AppShell.Main>
 
         <Box
           id="lennuk"
           component="section"
           style={{
             alignItems: "center",
-            backgroundImage: `linear-gradient(90deg, rgba(10,25,10,0.96), rgba(26,46,26,0.78), rgba(10,25,10,0.92)), url(${forestImage})`,
-            backgroundPosition: "center",
-            backgroundSize: "cover",
             color: "white",
             display: "flex",
             minHeight: "clamp(720px, 88vh, 880px)",
@@ -279,18 +338,36 @@ function App() {
             position: "relative",
           }}
         >
+          <BackgroundImage
+            aria-hidden="true"
+            src={forestImage}
+            style={{
+              filter: "blur(8px)",
+              inset: "-18px",
+              position: "absolute",
+              transform: "scale(1.04)",
+              zIndex: 0,
+            }}
+          />
+          <Overlay
+            backgroundOpacity={0.18}
+            color="#0a190a"
+            gradient="linear-gradient(90deg, rgba(10,25,10,0.58), rgba(26,46,26,0.24), rgba(10,25,10,0.48))"
+            zIndex={0}
+          />
           <MotionBox
             aria-hidden="true"
-            animate={{ opacity: [0.75, 1, 0.75] }}
+            animate={{ opacity: [0.38, 0.58, 0.38] }}
             transition={{ duration: 6, ease: "easeInOut", repeat: Infinity }}
             style={{
               background:
-                "radial-gradient(circle at 52% 18%, rgba(168,224,149,0.32), transparent 24%), linear-gradient(180deg, transparent 68%, rgba(7,22,7,0.86))",
+                "radial-gradient(circle at 52% 18%, rgba(168,224,149,0.22), transparent 24%), linear-gradient(180deg, transparent 72%, rgba(7,22,7,0.46))",
               inset: 0,
               position: "absolute",
+              zIndex: 0,
             }}
           />
-          <Container size="lg" style={{ position: "relative", zIndex: 1 }}>
+          <Container size="lg" style={{ position: "relative", zIndex: 2 }}>
             <Grid align="center" gutter="xl">
               <Grid.Col span={{ base: 12, md: 7 }}>
                 <Stack
@@ -349,7 +426,9 @@ function App() {
                   radius="md"
                   shadow="xl"
                   withBorder
-                  bg="rgba(255,255,255,0.93)"
+                  bg="#f6fbf2"
+                  c="#102410"
+                  style={{ borderColor: "rgba(168, 224, 149, 0.45)" }}
                 >
                   <Stack align="center" ta="center">
                     <ThemeIcon
@@ -362,13 +441,23 @@ function App() {
                     >
                       <IconPlane size={48} />
                     </ThemeIcon>
-                    <Title order={2} c="forest.9">
+                    <Title order={2} c="#102410">
                       Standard A4 paberist ehitatud katsemudel
                     </Title>
-                    <Text c="dimmed">
-                      Disainitud korduvate sprintide, testlendude ja meeskondliku
-                      tagasiside pohjal.
-                    </Text>
+                    <List
+                      c="#426b3d"
+                      icon={
+                        <ThemeIcon color="forest" radius="xl" size={22}>
+                          <IconPlane size={14} />
+                        </ThemeIcon>
+                      }
+                      spacing="xs"
+                      ta="left"
+                    >
+                      <List.Item>Korduvate sprintide pohjal disainitud.</List.Item>
+                      <List.Item>Testlendudega kontrollitud ja parandatud.</List.Item>
+                      <List.Item>Meeskondliku tagasisidega viimistletud.</List.Item>
+                    </List>
                   </Stack>
                 </Paper>
               </Grid.Col>
@@ -396,13 +485,24 @@ function App() {
                     transition={{ type: "spring", stiffness: 260, damping: 22 }}
                   >
                     <Stack gap="sm">
-                      <ThemeIcon color="forest" radius="xl" size={52}>
-                        <Icon size={28} />
-                      </ThemeIcon>
-                      <Title order={3} size="2.2rem" c="forest.8">
+                      <RingProgress
+                        roundCaps
+                        size={92}
+                        thickness={7}
+                        sections={[{ value: item.progress, color: "forest" }]}
+                        label={
+                          <Center>
+                            <ThemeIcon color="forest" radius="xl" size={46}>
+                              <Icon size={25} />
+                            </ThemeIcon>
+                          </Center>
+                        }
+                      />
+                      <Title order={3} size="2.2rem" c="forest.2">
                         {item.value}
                       </Title>
                       <Text fw={700}>{item.label}</Text>
+                      <Progress color="forest" value={item.progress} radius="xl" size="sm" />
                       <Text c="dimmed">{item.text}</Text>
                     </Stack>
                   </MotionCard>
@@ -519,7 +619,8 @@ function App() {
             </Group>
           </Container>
         </Box>
-      </Box>
+        </AppShell.Main>
+      </AppShell>
     </MantineProvider>
   );
 }
