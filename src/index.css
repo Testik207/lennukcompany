@@ -7,5 +7,5 @@ body {
 }
 
 section {
-  scroll-margin-top: 88px;
+  scroll-margin-top: calc(88px + env(safe-area-inset-top));
 }

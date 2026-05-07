@@ -547,7 +547,7 @@ function App() {
   return (
     <MantineProvider theme={theme} forceColorScheme={colorScheme}>
       <AppShell
-        header={{ height: 76 }}
+        header={{ height: "calc(76px + env(safe-area-inset-top))" }}
         padding={0}
         bg={colors.appBg}
         style={{
@@ -563,7 +563,7 @@ function App() {
             borderBottom: colors.headerBorder,
           }}
         >
-          <Container size="lg">
+          <Container size="lg" style={{ paddingTop: "env(safe-area-inset-top)" }}>
             <Group h={76} justify="space-between" wrap="nowrap">
               <Group gap="sm" wrap="nowrap">
                 <Avatar color="forest" radius="xl" variant="filled">

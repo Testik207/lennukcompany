@@ -1,0 +1,9 @@
+{
+  "appId": "ee.tarpv24.lennukcompany",
+  "appName": "TARpv24 Lennuk",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https"
+  }
+}

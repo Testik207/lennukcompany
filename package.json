@@ -6,9 +6,17 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "site:build": "vite build",
+    "preview": "vite preview",
+    "mobile:build": "npm run build && npx cap sync",
+    "android": "npm run mobile:build && npx cap open android",
+    "ios": "npm run mobile:build && npx cap open ios"
   },
   "dependencies": {
+    "@capacitor/android": "^8.3.1",
+    "@capacitor/cli": "^8.3.1",
+    "@capacitor/core": "^8.3.1",
+    "@capacitor/ios": "^8.3.1",
     "@fontsource/poppins": "^5.2.7",
     "@mantine/core": "^9.1.1",
     "@mantine/hooks": "^9.1.1",
