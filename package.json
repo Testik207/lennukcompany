@@ -1,0 +1,24 @@
+{
+  "name": "tarpv24-lennuk-company",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@fontsource/poppins": "^5.2.7",
+    "@mui/icons-material": "^9.0.1",
+    "@mui/lab": "^9.0.0-beta.3",
+    "@mui/material": "^9.0.1",
+    "@vitejs/plugin-react": "^6.0.1",
+    "framer-motion": "^12.38.0",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
+    "vite": "^8.0.11"
+  }
+}
