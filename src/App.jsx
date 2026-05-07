@@ -509,7 +509,7 @@ function App() {
           <Container size="lg">
             <Divider color="rgba(168,224,149,0.25)" mb="lg" />
             <Group justify="space-between" gap="md">
-              <Text c="rgba(255,255,255,0.7)">(c) 2025 TARpv24 Lennukitehas</Text>
+              <Text c="rgba(255,255,255,0.7)">(c) 2026 TARpv24 Lennukitehas</Text>
               <Text c="rgba(255,255,255,0.7)">
                 Hussein, Makskim, Timur, Nikita - Projektijuhtimine ja Agiilsus
               </Text>
