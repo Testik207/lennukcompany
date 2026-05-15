@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paberlennuki Klassifitseerija (Gemini AI)</title>
+    <!-- Kasutame TailwindCSS-i ilusa disaini jaoks kiiresti -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3b82f6;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+
+    <div class="bg-white rounded-xl shadow-lg max-w-5xl w-full p-6 text-gray-800 flex flex-col md:flex-row gap-6">
+        
+        <!-- VASAK PANEEL: Sisend ja Analüüs -->
+        <div class="md:w-1/2 flex flex-col">
+            <h1 class="text-3xl font-bold text-center mb-2 text-blue-600">✈️ AI Paberlennuki Tuvastaja</h1>
+            <p class="text-center text-gray-500 mb-6">Agiilne prototüüp</p>
+
+            <div class="mb-4">
+                <label class="block text-sm font-semibold mb-2">1) Lae üles testpilt (.jpg, .png):</label>
+                <div class="mt-2">
+                    <input id="imageUpload" type="file" accept="image/*" onchange="previewImage(event)" class="w-full border p-2 rounded focus:ring focus:ring-blue-300">
+                </div>
+                
+                <div class="flex items-center my-4">
+                    <hr class="flex-grow border-gray-300">
+                    <span class="px-3 text-gray-400 text-sm font-semibold">VÕI VEEBIST</span>
+                    <hr class="flex-grow border-gray-300">
+                </div>
+                
+                <label class="block text-sm font-semibold mb-2">2) Sisesta pildi URL/Link:</label>
+                <input id="imageUrlInput" type="text" oninput="previewUrlImage(event)" class="w-full border rounded p-2 focus:ring focus:ring-blue-300" placeholder="https://...">
+
+                <div class="mt-4 flex justify-center">
+                    <img id="preview" src="" alt="Pildi eelvaade" class="hidden max-h-48 rounded shadow object-contain">
+                </div>
+            </div>
+
+            <button onclick="analyzeImage()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition mb-6 shadow-md">
+                🔍 Analüüsi pilti
+            </button>
+
+            <div id="loading" class="hidden flex-col items-center justify-center mb-6">
+                <div class="loader mb-2"></div>
+                <span class="text-gray-500">Gemini analüüsib pilti...</span>
+            </div>
+
+            <div id="results" class="hidden border-t pt-4">
+                <h2 class="text-xl font-bold mb-4">Süsteemi Vastus:</h2>
+                
+                <!-- Samm 1 -->
+                <div id="step1" class="flex items-center gap-2 mb-2">
+                    <span id="step1-icon" class="text-xl">⏳</span>
+                    <span class="font-medium">Samm A: Kas pildil on lennuk?</span>
+                </div>
+                
+                <!-- Samm 2 -->
+                <div id="step2" class="flex items-center gap-2 mb-2 hidden">
+                    <span id="step2-icon" class="text-xl">⏳</span>
+                    <span class="font-medium">Samm B: Kas see on paberlennuk?</span>
+                </div>
+
+                <!-- Tulemus -->
+                <div id="finalResult" class="mt-4 p-4 rounded-lg hidden">
+                    <!-- Sisu genereeritakse JS-iga -->
+                </div>
+            </div>
+        </div>
+
+        <!-- PAREM PANEEL: Ajalugu -->
+        <div class="md:w-1/2 md:border-l md:pl-6 flex flex-col max-h-[80vh]">
+            <h2 class="text-2xl font-bold mb-4 text-gray-700">Ajalugu 🕒</h2>
+            <div id="historyList" class="flex flex-col gap-3 overflow-y-auto pr-2 pb-4">
+                <!-- Ajaloo kirjed tekivad siia -->
+                <p id="emptyHistory" class="text-gray-400 italic">Ajalugu on tühi. Analüüsi esimene pilt!</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let uploadedFileName = "";
+        let currentImageSrc = "";
+        let historyCounter = 1;
+
+        function previewImage(event) {
+            const file = event.target.files[0];
+            // Tühjendame URL sisestuse, et asjad ei kattuks
+            document.getElementById('imageUrlInput').value = "";
+            
+            if (!file) {
+                document.getElementById('preview').classList.add('hidden');
+                uploadedFileName = "";
+                currentImageSrc = "";
+                return;
+            }
+            
+            uploadedFileName = file.name.toLowerCase();
+            currentImageSrc = URL.createObjectURL(file);
+            const preview = document.getElementById('preview');
+            preview.src = currentImageSrc;
+            preview.classList.remove('hidden');
+        }
+
+        function previewUrlImage(event) {
+            const url = event.target.value;
+            // Tühjendame faili inputi
+            document.getElementById('imageUpload').value = "";
+            
+            if (!url) {
+                document.getElementById('preview').classList.add('hidden');
+                uploadedFileName = "";
+                currentImageSrc = "";
+                return;
+            }
+            
+            uploadedFileName = url.toLowerCase(); // Laename URL-i mock loogika jaoks
+            currentImageSrc = url;
+            const preview = document.getElementById('preview');
+            preview.src = currentImageSrc;
+            preview.classList.remove('hidden');
+        }
+
+        async function analyzeImage() {
+            if (!uploadedFileName) return alert("Palun lae esmalt pilt üles või sisesta URL!");
+            const urlStr = uploadedFileName;
+
+            // UI Reset
+            document.getElementById('results').classList.add('hidden');
+            document.getElementById('loading').classList.remove('hidden');
+            document.getElementById('step2').classList.add('hidden');
+            document.getElementById('finalResult').classList.add('hidden');
+            
+            // Simuleerime API viiteaega
+            await new Promise(r => setTimeout(r, 1500));
+            
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('results').classList.remove('hidden');
+
+            const s1 = document.getElementById('step1');
+            const s1Icon = document.getElementById('step1-icon');
+            const s2 = document.getElementById('step2');
+            const s2Icon = document.getElementById('step2-icon');
+            const finalRes = document.getElementById('finalResult');
+
+            // --- LOOGIKA (Gemini AI mock) ---
+            if (urlStr.includes('kass') || urlStr.includes('cat') || urlStr.includes('bunny') || urlStr.includes('rabbit') || urlStr.includes('jän') || urlStr.includes('image')) {
+                s1Icon.textContent = "❌";
+                finalRes.className = "mt-4 p-4 rounded-lg bg-red-100 text-red-800 block";
+                finalRes.innerHTML = `<strong>Viga:</strong> Oota nüüd, see ei ole lennuk ega lennukilaadne! Palun lae üles lennumasin. Või on see prillidega jänku? Igal juhul see ei lenda.`;
+            } else if (urlStr.includes('helicopter') || urlStr.includes('kopter')) {
+                s1Icon.textContent = "✅";
+                s2.classList.remove('hidden');
+                s2Icon.textContent = "❌";
+                finalRes.className = "mt-4 p-4 rounded-lg bg-orange-100 text-orange-800 block";
+                finalRes.innerHTML = `<strong>Viga:</strong> See on helikopter! Ehkki see on lennumasin (Samm A: ✅), ei ole tegemist paberlennukiga. Rootoreid on paberist raske voltida.`;
+            } else if (urlStr.includes('regular') || urlStr.includes('boeng') || urlStr.includes('boeing') || urlStr.includes('päris')) {
+                s1Icon.textContent = "✅";
+                s2.classList.remove('hidden');
+                s2Icon.textContent = "❌";
+                finalRes.className = "mt-4 p-4 rounded-lg bg-orange-100 text-orange-800 block";
+                finalRes.innerHTML = `<strong>Viga:</strong> See on päris reisilennuk. See on lennuk küll, aga see pole paberist käsitöö. Pealegi pole meil lennuluba.`;
+            } else {
+                // Vaikimisi loeme paberlennukiks
+                s1Icon.textContent = "✅";
+                s2.classList.remove('hidden');
+                s2Icon.textContent = "✅";
+                finalRes.className = "mt-4 p-4 rounded-lg bg-green-100 text-green-800 block";
+                finalRes.innerHTML = `
+                    <p class="mb-2"><strong>Tuvastatud:</strong> Purilennuk (Samm 3)</p>
+                    <p class="mb-2"><strong>Juhend:</strong><br>
+                    1. Võta A4 paber.<br>
+                    2. Murra pikkupidi pooleks.<br>
+                    3. Voldi ülemised nurgad keskele...</p>
+                    <a href="https://www.youtube.com/watch?v=3BNg4fDJC8A" target="_blank" class="text-blue-600 underline font-bold mt-2 inline-block">📺 Vaata YouTube'i videot siit</a>
+                `;
+            }
+
+            // Lisa ajalukku
+            addToHistory(urlStr, finalRes.innerHTML, finalRes.className);
+        }
+
+        function addToHistory(nameStr, resultHtml, resultClass) {
+            const emptyHistoryText = document.getElementById('emptyHistory');
+            if (emptyHistoryText) emptyHistoryText.style.display = 'none';
+
+            const historyList = document.getElementById('historyList');
+            
+            // Loome uue ajaloo kaardi
+            const historyCard = document.createElement('div');
+            historyCard.className = "p-3 border rounded-lg shadow-sm bg-gray-50 flex items-start gap-4";
+            
+            // Pildi pisipilt
+            const thumbnail = document.createElement('img');
+            thumbnail.src = currentImageSrc;
+            thumbnail.className = "w-16 h-16 object-cover rounded bg-white border";
+            
+            // Tulemuse tekst
+            const infoDiv = document.createElement('div');
+            infoDiv.className = "flex-1 text-sm";
+            
+            // Lühendame vastust ajaloo jaoks natuke
+            let shortResult = "Tuvastamata";
+            if (resultClass.includes("bg-red-100")) shortResult = "❌ Pole lennuk";
+            else if (resultClass.includes("bg-orange-100")) shortResult = "⚠️ Vale lennuk";
+            else if (resultClass.includes("bg-green-100")) shortResult = "✅ Paberlennuk";
+
+            infoDiv.innerHTML = `<span class="font-bold text-gray-700">Otsing #${historyCounter++}</span><br>
+                                 <span class="text-xs text-gray-500 break-all">${nameStr}</span>
+                                 <div class="mt-1 font-semibold">${shortResult}</div>`;
+            
+            historyCard.appendChild(thumbnail);
+            historyCard.appendChild(infoDiv);
+            
+            // Lisame nimekirja algusesse
+            historyList.prepend(historyCard);
+        }
+    </script>
+</body>
+</html>
