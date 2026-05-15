@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="et">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Paberlennukite Klassifitseerija</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Agile praktikum</p>
+          <h1>Paberlennukite klassifitseerija</h1>
+        </div>
+      </header>
+
+      <main>
+        <section id="classifier" aria-labelledby="classifier-title">
+          <div class="workspace">
+            <aside class="input-panel" aria-label="Sisendi valik">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">Sisend</p>
+                  <h2 id="classifier-title">Testpildid</h2>
+                </div>
+                <button class="ghost-button" id="resetButton" type="button">Lähtesta</button>
+              </div>
+
+              <div class="sample-grid" id="sampleGrid"></div>
+
+              <label class="upload-drop" for="fileInput">
+                <span class="upload-title">Lae pilt</span>
+                <span class="upload-copy">Üleslaetud pildil otsib brauseris töötav AI päris lennukit ning eraldi heledat nurgelist paberlennuki kuju.</span>
+                <span class="file-picker-row">
+                  <span class="file-picker-button">Vali fail</span>
+                  <span class="file-name" id="fileName">Faili pole valitud</span>
+                </span>
+                <input id="fileInput" class="file-input" type="file" accept="image/*" />
+              </label>
+
+              <button class="secondary-button" id="decoyButton" type="button">Simuleeri vale sisend</button>
+            </aside>
+
+            <section class="result-panel" aria-live="polite">
+              <div class="preview-band">
+                <div class="image-frame">
+                  <img id="previewImage" src="" alt="" />
+                  <div class="placeholder" id="previewPlaceholder">
+                    <span>Vali pilt</span>
+                  </div>
+                </div>
+                <div class="decision-summary">
+                  <p class="eyebrow">Otsus</p>
+                  <h2 id="decisionTitle">Ootel</h2>
+                  <p id="decisionCopy">Klassifikaator ootab sisendit.</p>
+                  <div class="confidence-row" aria-label="Mudeli kindlus">
+                    <span>Kindlus</span>
+                    <div class="meter">
+                      <div id="confidenceMeter"></div>
+                    </div>
+                    <strong id="confidenceValue">0%</strong>
+                  </div>
+                </div>
+              </div>
+
+              <div class="stage-list" id="stageList"></div>
+
+              <div class="guide-panel hidden" id="guidePanel">
+                <div class="panel-heading">
+                  <div>
+                    <p class="eyebrow">Juhendamine</p>
+                    <h2 id="guideTitle">Voltmisjuhis</h2>
+                  </div>
+                  <a id="guideLink" class="link-button" href="#" target="_blank" rel="noreferrer">Video</a>
+                </div>
+                <ol class="guide-steps" id="guideSteps"></ol>
+              </div>
+            </section>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js"></script>
+    <script src="./script.js"></script>
+  </body>
+</html>
